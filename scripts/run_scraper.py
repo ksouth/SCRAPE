@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scraper.website_scraper import WebsiteScraper
 from processor.chunker import SemanticChunker
-from processor.embedder import DummyEmbedder
+from processor.embedder import LocalEmbedder
 import chromadb
 
 # Setup logging
@@ -86,7 +86,7 @@ async def main():
         chunk_size=processing_config.get("chunk_size", 512),
         overlap=processing_config.get("chunk_overlap", 100)
     )
-    embedder = DummyEmbedder(dim=384)  # Fast demo embeddings
+    embedder = LocalEmbedder()  # Fast demo embeddings
 
     # Initialize persistent Chroma database
     chroma_client = chromadb.PersistentClient(path="./chroma_data")

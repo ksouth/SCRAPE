@@ -27,13 +27,25 @@
    - Location: `./chroma_data/` (persistent storage)
    - Both API and scraper now use same persistent database
 
-## ⚠️ CURRENT ISSUE
+## ⚠️ CURRENT ISSUE - FINAL DEBUG NEEDED
 
-**Database save not working yet** - Just fixed but scraper still running:
-- Scraper was logging "Saved" but NOT actually saving to DB
-- Fixed in: `scripts/run_scraper.py` (lines 22-30 and 138-150)
-- Scraper SHOULD be running now with persistent saves
-- **CHECK**: Background task `bktrjmijl` output
+**Status**: 2045 documents ARE being saved, but search returns 0 results
+
+**Root cause**: API and scraper are creating SEPARATE Chroma databases
+- API creates: `api/main.py` runs from project root → `./chroma_data/`
+- Scraper creates: `scripts/run_scraper.py` runs from same root → `./chroma_data/`
+- They SHOULD be the same but connection isn't finding documents
+
+**Quick fix for next session**:
+1. Check if both are pointing to same path (use absolute path `/Users/mossyfern/.../chroma_data`)
+2. Verify Chroma can actually read/query the saved data: 
+   ```python
+   import chromadb
+   client = chromadb.PersistentClient(path="./chroma_data")
+   collection = client.get_collection("documents")
+   print(collection.count())  # Should be > 0
+   ```
+3. If count() shows documents, issue is with DummyEmbedder - it generates random vectors so search can't find anything!
 
 ## 🚀 NEXT STEPS
 
