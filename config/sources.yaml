@@ -2,47 +2,48 @@
 # SCRAPE: NDIS Data Aggregator
 
 sources:
-  # NDIA Accountability Project - FOI Documents
-  - name: "NDIA Accountability - Documents"
-    type: "website"
-    url: "https://ndiaaccountability.org/library/documents/"
-    enabled: true
-    schedule: "0 0 * * *"  # Daily at midnight
-    selectors:
-      documents: "div[class*='document']"  # Document containers
-      title: "h2, h3"                      # Document title
-      content: "p, div[class*='content']"  # Document content
-      url: "a[href*='/']"                  # Link to document
-    headers:
-      User-Agent: "SCRAPE-Bot/1.0 (+https://github.com/ksouth/SCRAPE)"
-    timeout: 30
-
-  # NDIA Accountability - Inquiry Submissions
+  # NDIA Accountability Project - External Submissions
   - name: "NDIA Accountability - Submissions"
     type: "website"
     url: "https://ndiaaccountability.org/library/external-submissions/"
     enabled: true
     schedule: "0 1 * * *"  # Daily at 1am
     selectors:
-      documents: "li, div[class*='submission']"
-      title: "a, h3"
-      content: "p"
-      url: "a[href]"
+      documents: "li"            # Each submission is a list item
+      title: "strong, h3, h2"     # Submission title
+      content: "span, p"          # Submission details
+      url: "a[href]"              # Link to full submission
     headers:
       User-Agent: "SCRAPE-Bot/1.0 (+https://github.com/ksouth/SCRAPE)"
     timeout: 30
 
-  # NDIS Decoded - Glossary & Blog
-  - name: "NDIS Decoded - Glossary & Articles"
+  # NDIA Accountability Project - FOI Documents
+  - name: "NDIA Accountability - Documents"
     type: "website"
-    url: "https://decodendis.pplx.app/"
+    url: "https://ndiaaccountability.org/library/documents/"
     enabled: true
-    schedule: "0 2 * * 0"  # Weekly on Sunday at 2am
+    schedule: "0 2 * * *"  # Daily at 2am
     selectors:
-      documents: "article, div[class*='term']"  # Articles and glossary terms
-      title: "h1, h2, h3, .term-title"          # Titles
-      content: "p, .content, .term-definition"  # Content
-      url: "a[href]"                            # Links
+      documents: "div, li"        # Document containers
+      title: "h2, h3, strong"      # Document title
+      content: "p"                 # Document description
+      url: "a[href*='/library/']"  # Link to document
+    headers:
+      User-Agent: "SCRAPE-Bot/1.0 (+https://github.com/ksouth/SCRAPE)"
+    timeout: 30
+
+  # NDIS Decoded - Blog & Glossary
+  # Note: This site uses JavaScript rendering - may need Selenium/Playwright
+  - name: "NDIS Decoded - Blog"
+    type: "website"
+    url: "https://decodendis.pplx.app/blog"
+    enabled: false  # Disabled - requires JS rendering
+    schedule: "0 3 * * 0"  # Weekly Sunday at 3am
+    selectors:
+      documents: "article"
+      title: "h1, h2"
+      content: "p"
+      url: "a[href*='/blog']"
     headers:
       User-Agent: "SCRAPE-Bot/1.0 (+https://github.com/ksouth/SCRAPE)"
     timeout: 30

@@ -72,17 +72,31 @@ class WebsiteScraper(BaseScraper):
         content_elem = element.select_one(content_selector)
         url_elem = element.select_one(url_selector)
 
-        if not title_elem or not content_elem:
+        # Extract title (required)
+        if not title_elem:
             return None
 
         title = title_elem.get_text(strip=True)
-        content = content_elem.get_text(strip=True)
-        url = url_elem.get("href", self.url) if url_elem else self.url
+        if not title:
+            return None
+
+        # Extract content (fallback to element text if no content selector matches)
+        if content_elem:
+            content = content_elem.get_text(strip=True)
+        else:
+            content = element.get_text(strip=True)[:500]  # Use element's text, limit to 500 chars
+
+        if not content:
+            return None
+
+        # Extract URL
+        url = self.url
+        if url_elem:
+            url = url_elem.get("href", self.url)
 
         # Make relative URLs absolute
         if url.startswith("/"):
             from urllib.parse import urljoin
-
             url = urljoin(self.url, url)
 
         return ScrapedDocument(
