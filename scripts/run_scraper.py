@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scraper.website_scraper import WebsiteScraper
 from processor.chunker import SemanticChunker
-from processor.embedder import LocalEmbedder
+from processor.embedder import DummyEmbedder
 
 # Setup logging
 logging.basicConfig(
@@ -85,9 +85,7 @@ async def main():
         chunk_size=processing_config.get("chunk_size", 512),
         overlap=processing_config.get("chunk_overlap", 100)
     )
-    embedder = LocalEmbedder(
-        model_name=processing_config.get("embedding_model", "all-MiniLM-L6-v2")
-    )
+    embedder = DummyEmbedder(dim=384)  # Fast demo embeddings
 
     total_documents = 0
     total_chunks = 0
