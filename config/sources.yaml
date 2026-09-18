@@ -1,0 +1,61 @@
+# Data sources configuration
+# Add your data sources here
+
+sources:
+  # Example: Government website scraper
+  - name: "Example Government Site"
+    type: "website"
+    url: "https://example.gov.au"
+    enabled: false
+    schedule: "0 0 * * *"  # Daily at midnight (cron format)
+    selectors:
+      documents: "article"      # CSS selector for document containers
+      title: "h1"               # Title selector
+      content: ".content"       # Content selector
+      url: "a"                  # URL selector
+    headers:
+      User-Agent: "SCRAPE-Bot/1.0 (+http://localhost)"
+    timeout: 30
+
+  # Example: PDF repository
+  - name: "Example PDF Repo"
+    type: "pdf"
+    url: "https://example.com/documents"
+    enabled: false
+    schedule: "0 2 * * *"       # Daily at 2am
+    pattern: "*.pdf"            # File pattern to match
+    timeout: 30
+
+  # Example: API endpoint
+  - name: "Example API"
+    type: "api"
+    url: "https://api.example.com/documents"
+    enabled: false
+    schedule: "0 */6 * * *"     # Every 6 hours
+    method: "GET"
+    params:
+      limit: 100
+      offset: 0
+    timeout: 30
+
+# Processing configuration
+processing:
+  chunk_size: 512              # Characters per chunk
+  chunk_overlap: 100           # Overlap between chunks
+  embedding_model: "all-MiniLM-L6-v2"  # HuggingFace model
+  use_openai: false            # Use OpenAI API for embeddings
+  ocr_enabled: true            # Enable OCR for PDFs
+  ocr_lang: "eng"              # Tesseract language
+
+# Storage configuration
+storage:
+  vector_db: "chroma"
+  chroma_host: "localhost"
+  chroma_port: 8000
+  collection_name: "documents"
+
+# Logging
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/scraper.log"
