@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import SearchBox from '../components/SearchBox.jsx';
+import SearchBox from '../components/SearchBox.astro';
 ---
 
 <Layout title="SCRAPE - Document Search">
@@ -9,7 +9,7 @@ import SearchBox from '../components/SearchBox.jsx';
 			<h1>SCRAPE</h1>
 			<p class="subtitle">Semantic search over your documents</p>
 
-			<SearchBox client:load />
+			<SearchBox />
 
 			<section class="info">
 				<h2>How it works</h2>
