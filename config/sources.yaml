@@ -1,41 +1,50 @@
 # Data sources configuration
-# Add your data sources here
+# SCRAPE: NDIS Data Aggregator
 
 sources:
-  # Example: Government website scraper
-  - name: "Example Government Site"
+  # NDIA Accountability Project - FOI Documents
+  - name: "NDIA Accountability - Documents"
     type: "website"
-    url: "https://example.gov.au"
-    enabled: false
-    schedule: "0 0 * * *"  # Daily at midnight (cron format)
+    url: "https://ndiaaccountability.org/library/documents/"
+    enabled: true
+    schedule: "0 0 * * *"  # Daily at midnight
     selectors:
-      documents: "article"      # CSS selector for document containers
-      title: "h1"               # Title selector
-      content: ".content"       # Content selector
-      url: "a"                  # URL selector
+      documents: "div[class*='document']"  # Document containers
+      title: "h2, h3"                      # Document title
+      content: "p, div[class*='content']"  # Document content
+      url: "a[href*='/']"                  # Link to document
     headers:
-      User-Agent: "SCRAPE-Bot/1.0 (+http://localhost)"
+      User-Agent: "SCRAPE-Bot/1.0 (+https://github.com/ksouth/SCRAPE)"
     timeout: 30
 
-  # Example: PDF repository
-  - name: "Example PDF Repo"
-    type: "pdf"
-    url: "https://example.com/documents"
-    enabled: false
-    schedule: "0 2 * * *"       # Daily at 2am
-    pattern: "*.pdf"            # File pattern to match
+  # NDIA Accountability - Inquiry Submissions
+  - name: "NDIA Accountability - Submissions"
+    type: "website"
+    url: "https://ndiaaccountability.org/library/external-submissions/"
+    enabled: true
+    schedule: "0 1 * * *"  # Daily at 1am
+    selectors:
+      documents: "li, div[class*='submission']"
+      title: "a, h3"
+      content: "p"
+      url: "a[href]"
+    headers:
+      User-Agent: "SCRAPE-Bot/1.0 (+https://github.com/ksouth/SCRAPE)"
     timeout: 30
 
-  # Example: API endpoint
-  - name: "Example API"
-    type: "api"
-    url: "https://api.example.com/documents"
-    enabled: false
-    schedule: "0 */6 * * *"     # Every 6 hours
-    method: "GET"
-    params:
-      limit: 100
-      offset: 0
+  # NDIS Decoded - Glossary & Blog
+  - name: "NDIS Decoded - Glossary & Articles"
+    type: "website"
+    url: "https://decodendis.pplx.app/"
+    enabled: true
+    schedule: "0 2 * * 0"  # Weekly on Sunday at 2am
+    selectors:
+      documents: "article, div[class*='term']"  # Articles and glossary terms
+      title: "h1, h2, h3, .term-title"          # Titles
+      content: "p, .content, .term-definition"  # Content
+      url: "a[href]"                            # Links
+    headers:
+      User-Agent: "SCRAPE-Bot/1.0 (+https://github.com/ksouth/SCRAPE)"
     timeout: 30
 
 # Processing configuration
