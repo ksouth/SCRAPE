@@ -42,8 +42,14 @@ app = FastAPI(
     title="SCRAPE - Document Search API",
     description="Semantic search over scraped documents using RAG",
     version="1.0.0",
-    lifespan=lifespan,
 )
+
+# Simple startup
+@app.on_event("startup")
+async def startup():
+    global db
+    db = VectorDatabase()
+    await db.connect()
 
 # Enable CORS
 app.add_middleware(
@@ -54,6 +60,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/")
+async def root():
+    """Root endpoint."""
+    return {"message": "SCRAPE API running"}
 
 @app.get("/healthz")
 async def healthz():
