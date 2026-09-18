@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from scraper.website_scraper import WebsiteScraper
 from processor.chunker import SemanticChunker
 from processor.embedder import DummyEmbedder
+import chromadb
 
 # Setup logging
 logging.basicConfig(
@@ -87,6 +88,13 @@ async def main():
     )
     embedder = DummyEmbedder(dim=384)  # Fast demo embeddings
 
+    # Initialize persistent Chroma database
+    chroma_client = chromadb.PersistentClient(path="./chroma_data")
+    collection = chroma_client.get_or_create_collection(
+        name="documents",
+        metadata={"hnsw:space": "cosine"}
+    )
+
     total_documents = 0
     total_chunks = 0
 
@@ -127,8 +135,23 @@ async def main():
                     if args.dry_run:
                         logger.info(f"[DRY-RUN] Would save: {doc.title}")
                     else:
-                        # TODO: Save to vector database
-                        logger.info(f"Saved: {doc.title} ({len(chunks)} chunks)")
+                        # Save to persistent Chroma database
+                        try:
+                            import hashlib
+                            doc_hash = hashlib.md5(f"{doc.url}{doc.title}".encode()).hexdigest()[:8]
+                            collection.add(
+                                ids=[f"{doc_hash}_{i}" for i in range(len(chunks))],
+                                documents=chunks,
+                                metadatas=[{
+                                    "title": doc.title,
+                                    "url": doc.url,
+                                    "source": doc.source,
+                                    "document_type": doc.document_type
+                                } for _ in chunks]
+                            )
+                            logger.info(f"Saved: {doc.title} ({len(chunks)} chunks)")
+                        except Exception as e:
+                            logger.error(f"Failed to save {doc.title}: {e}")
 
             elif source_type == "pdf":
                 logger.warning(f"PDF scraper not yet implemented")

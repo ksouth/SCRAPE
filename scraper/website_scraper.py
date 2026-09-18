@@ -6,6 +6,8 @@ from typing import List, Dict, Any
 from .base_scraper import BaseScraper, ScrapedDocument
 from datetime import datetime
 import logging
+import chromadb
+import os
 
 logger = logging.getLogger(__name__)
 

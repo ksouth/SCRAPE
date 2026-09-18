@@ -21,22 +21,6 @@ from .database import VectorDatabase
 # Initialize database connection
 db = None
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Startup and shutdown events."""
-    global db
-    # Startup
-    db = VectorDatabase(
-        host=os.getenv("CHROMA_HOST", "localhost"),
-        port=int(os.getenv("CHROMA_PORT", "8000")),
-    )
-    await db.connect()
-    yield
-    # Shutdown
-    await db.disconnect()
-
-
 # Create FastAPI app
 app = FastAPI(
     title="SCRAPE - Document Search API",
@@ -44,7 +28,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Simple startup
+# Startup
 @app.on_event("startup")
 async def startup():
     global db

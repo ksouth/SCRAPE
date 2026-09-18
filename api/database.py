@@ -26,13 +26,13 @@ class VectorDatabase:
     async def connect(self):
         """Connect to Chroma (embedded or server)."""
         try:
-            # Try embedded Chroma first (no Docker needed)
-            self.client = chromadb.Client()
+            # Use persistent embedded Chroma
+            self.client = chromadb.PersistentClient(path="./chroma_data")
             self.collection = self.client.get_or_create_collection(
                 name="documents",
                 metadata={"hnsw:space": "cosine"}
             )
-            logger.info("Connected to embedded Chroma database")
+            logger.info("Connected to persistent Chroma database")
         except Exception as e:
             logger.warning(f"Failed to connect to Chroma: {e}. Using mock mode.")
             self.collection = None  # Use mock mode
