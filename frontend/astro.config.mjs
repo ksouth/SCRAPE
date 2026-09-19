@@ -4,6 +4,7 @@ import react from '@astrojs/react';
 export default defineConfig({
   integrations: [react()],
   output: 'static',
+  outDir: '../docs',
   vite: {
     define: {
       'process.env.API_URL': JSON.stringify(
