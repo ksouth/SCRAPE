@@ -51,7 +51,6 @@ docker-compose.override.yml
 # Frontend
 frontend/node_modules/
 frontend/.astro/
-frontend/dist/
 
 # Testing
 .pytest_cache/
