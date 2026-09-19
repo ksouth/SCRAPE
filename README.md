@@ -40,11 +40,14 @@ SCRAPE/
 │   ├── search.py        # Search logic
 │   ├── documents.py     # Document endpoints
 │   └── database.py      # Vector DB connection
-├── frontend/            # Astro static site (starter)
+├── frontend/            # Astro static site source
 │   ├── src/pages/
 │   ├── src/components/
 │   ├── astro.config.mjs
 │   └── package.json
+├── docs/                # Built frontend (for GitHub Pages)
+│   ├── index.html
+│   └── _astro/
 ├── config/
 │   ├── settings.yaml    # Configuration
 │   └── sources.yaml     # Data sources to scrape
@@ -142,9 +145,15 @@ Swagger docs at `http://localhost:8000/docs`
 
 ### 6. Start Frontend
 
+**Option A: Development**
 ```bash
 cd frontend
 npm run dev
+```
+
+**Option B: Production (after build)**
+```bash
+python -m http.server 3000 --directory docs
 ```
 
 Frontend at `http://localhost:3000`
@@ -252,8 +261,21 @@ npm run build  # Generate static site
 
 ### Deploying
 
-**Frontend**: Deploy `frontend/dist/` to:
-- Vercel, Netlify, GitHub Pages
+**Frontend**: 
+```bash
+cd frontend
+npm run build  # Builds to ../docs automatically
+git add docs && git commit -m "Deploy: update frontend"
+git push origin main
+```
+
+Then enable GitHub Pages in repo Settings:
+- Go to **Settings → Pages**
+- Source: `main` branch, folder `/docs`
+- Site lives at `https://username.github.io/SCRAPE/`
+
+Alternatively deploy `docs/` to:
+- Vercel, Netlify
 - Traditional web hosting
 - Your own server
 

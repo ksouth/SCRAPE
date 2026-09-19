@@ -54,27 +54,21 @@ print(collection.count())  # Output: 1635
 
 ## 🚀 To Get Working Immediately
 
-### Option 1: Build & Deploy Frontend
-```bash
-cd frontend
-npm run build
+### Option 1: GitHub Pages (LIVE)
+Site is live at: **https://ksouth.github.io/SCRAPE/**
 
-# dist/ folder is ready for:
-# - Vercel (connect repo, auto-deploys)
-# - Netlify (connect repo, auto-deploys)  
-# - GitHub Pages (push dist/ to gh-pages branch)
-# - Any static host (upload dist/ folder)
-```
+Configuration:
+- Settings → Pages: `main` branch, `/docs` folder
+- Build: `npm run build` → outputs directly to `/docs`
+- Auto-deploys on every push
 
-### Option 2: Run Locally (after build)
+### Option 2: Run Locally
 ```bash
 # Terminal 1 - API
-cd /path/to/SCRAPE
 python3 -m uvicorn api.main:app --port 8002
 
-# Terminal 2 - Frontend (serve built version)
-cd frontend
-npx http-server dist --port 3000
+# Terminal 2 - Frontend
+python3 -m http.server 3000 --directory docs
 
 # Browser: http://localhost:3000
 ```
