@@ -15,6 +15,8 @@ Archive whole websites for the record: every page as it looked, and every docume
 
 4. Commit. The **Archive sites** workflow starts within a minute. When it finishes, the capture is under **Releases**.
 
+Your copy can delete the `archive/` folder; it only holds this template's earlier prototype.
+
 To capture something once without editing `sites.yaml`, go to **Actions → Archive sites → Run workflow** and paste a URL. The same form can re-capture a listed site on demand, and can set a page limit for a quick test.
 
 ## What you get
@@ -24,9 +26,9 @@ Each capture is a release named after the site and date, with these files:
 | File | What it is |
 |---|---|
 | `<site>-<date>-part1.wacz` | The whole site as a standard web archive. Open https://replayweb.page and choose the file to click through the site exactly as it was captured. It runs in your browser; nothing is uploaded. |
-| `documents.zip` | Every linked document (PDF, Word, Excel, CSV, PowerPoint, ZIP and similar) as ordinary files, in folders by website and path. Includes documents the site links to on *other* websites. Split into `documents-1.zip`, `documents-2.zip`, … if very large. |
+| `documents.zip` | Every linked document (PDF, Word, Excel, CSV, PowerPoint, ZIP and similar) as ordinary files, in folders by website and path. Includes documents the site links to on *other* websites. Split into `documents-1.zip`, `documents-2.zip`, … if very large. Not included when the site has no documents. |
 | `documents.csv` | One row per document: its place in the zip, source URL, the page that linked to it, type, size, SHA-256, and whether it came from the crawl or from another site. |
-| `site-files.zip`, `site-files.csv` | Only with `site_files: true`. Every file the crawl captured (HTML, CSS, scripts, images, fonts, documents) exactly as the server sent it, in folders by website and path, with an index. Useful for reusing or rebuilding a site's own files (with the owner's permission). Pages without an extension are saved as `.html`. |
+| `site-files.zip`, `site-files.csv` | Only with `site_files: true`. Every file the crawl captured (HTML, CSS, scripts, images, fonts, documents) exactly as the server sent it, in folders by website and path, with an index. Useful for reusing or rebuilding a site's own files (with the owner's permission). Pages without an extension are saved as `.html`, and other files without one get an extension from their type (e.g. `.css`). |
 | `crawl-report.md` | Pages captured and failed, sizes, and every linked document that could not be captured and why. Also shown as the release description. |
 
 Pages are captured in a real browser ([Browsertrix Crawler](https://github.com/webrecorder/browsertrix-crawler) from Webrecorder), so sites that build pages with JavaScript are captured too.
@@ -68,6 +70,10 @@ Set any of these under `defaults:` for every site, or on one site to override.
 - When a page limit is set, the sitemap is not used, so a quick test follows the starting page's own links.
 - Each part's `documents.zip` contains the documents found during that part.
 - Releases are public if the repository is public. Use a private repository for anything that shouldn't be.
+
+## Updating a copy
+
+A repository made from this template doesn't receive later changes to it. To update a copy, replace its `archiver/`, `tests/` and `.github/workflows/` folders with the ones from [ksouth/SCRAPE](https://github.com/ksouth/SCRAPE), and compare its `sites.yaml` comments and this README for new settings. Keep your own `sites.yaml` entries.
 
 ## Run the tests
 
