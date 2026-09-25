@@ -140,7 +140,7 @@ The end of each `crawl-report.md` has an HTML comment that GitHub doesn't displa
 <!-- capture-stats {"pages": 5, "failed": 0, "documents": 0, "offsite_documents": 0, "site_files": 12} -->
 ```
 
-The dashboard reads the numbers from it. Reports written before it existed are read from their tables instead.
+The dashboard reads the numbers from it. Reports written before it existed are read from their tables instead. A release copied from another repository can also carry `<!-- original-published-at <time> -->`, which the dashboard uses as its capture time instead of the copy's publish time.
 
 ### `capture-index.json`
 

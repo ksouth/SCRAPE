@@ -130,6 +130,12 @@ class DashboardTest(unittest.TestCase):
         page = render_html(m, REPO)
         self.assertIn('<a href="captures/a-example/20260910T000000Z/">', page)
 
+    def test_copied_release_keeps_original_time(self):
+        copied = rel("moved-example", "20260901T000000Z", 1, "2026-09-25T10:00:00Z",
+                     body=stats(1, 0) + "\n<!-- original-published-at 2026-09-01T00:30:00Z -->")
+        m = build([], [copied], NOW, [], DAILY)
+        self.assertEqual(m["other"][0]["latest"]["finished"], datetime(2026, 9, 1, 0, 30, tzinfo=timezone.utc))
+
     def test_no_emoji(self):
         m = self.model([{"name": "new-example (part 1)", "conclusion": "failure",
                          "completed_at": "2026-09-25T11:00:00Z", "html_url": "L"}])

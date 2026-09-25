@@ -75,9 +75,14 @@ def next_daily(after: datetime, hour_minute: Tuple[int, int]) -> datetime:
     return t if t > after else t + timedelta(days=1)
 
 
+ORIGINAL_PUBLISHED_RE = re.compile(r"<!-- original-published-at (\S+) -->")
+
+
 def published(rel: Dict[str, Any]) -> str:
-    """When a release was published. Its created_at is the date of the tagged commit, not of the release."""
-    return rel.get("published_at") or rel.get("created_at") or ""
+    """When a release was published. Its created_at is the date of the tagged commit, not of the release.
+    A release copied from another repository keeps its first publish time in a hidden line in its notes."""
+    m = ORIGINAL_PUBLISHED_RE.search(rel.get("body") or "")
+    return (m.group(1) if m else "") or rel.get("published_at") or rel.get("created_at") or ""
 
 
 def list_path(slug: str, capture: str) -> str:
