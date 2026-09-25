@@ -172,7 +172,8 @@ def main() -> int:
     wacz = collection_dir / f"{collection}.wacz"
     stats_file = crawls / "stats.json"
     stats = json.loads(stats_file.read_text()) if stats_file.exists() else {}
-    saved_states = sorted((collection_dir / "crawls").glob("crawl-*.yaml"), key=lambda p: p.stat().st_mtime)
+    # The crawler writes <timestamp>-<id>-<collection>.yaml here when it stops before finishing.
+    saved_states = sorted((collection_dir / "crawls").glob("*.yaml"), key=lambda p: p.stat().st_mtime)
     partial = bool(saved_states)
 
     if not wacz.exists():
