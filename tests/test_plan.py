@@ -47,6 +47,12 @@ class PlanTest(unittest.TestCase):
         self.assertEqual((job["part"], job["capture"]), (3, "20260801T000000Z"))
         self.assertEqual(job["resume_tag"], f"archive/{s['slug']}/20260801T000000Z-part2")
 
+    def test_resume_only(self):
+        big, new = site("https://big.example"), site("https://new.example")
+        releases = parse_releases([release(big["slug"], 1, part=1, partial=True)])
+        self.assertEqual([j["slug"] for j in plan([big, new], releases, NOW)], [big["slug"], new["slug"]])
+        self.assertEqual([j["slug"] for j in plan([big, new], releases, NOW, resume_only=True)], [big["slug"]])
+
     def test_partial_stops_at_max_parts(self):
         s = site("https://big.example", max_parts=2)
         releases = parse_releases([release(s["slug"], 1, part=2, partial=True)])

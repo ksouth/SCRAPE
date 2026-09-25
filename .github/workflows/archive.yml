@@ -23,6 +23,7 @@ on:
 
 permissions:
   contents: write
+  actions: write  # to start the next run when a capture needs another part
 
 # One run at a time, so two runs never continue the same partial capture.
 concurrency:
@@ -76,3 +77,27 @@ jobs:
           JOB: ${{ toJSON(matrix) }}
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: python -m archiver.run
+
+  # A large site stops at the time or size limit and is published as an incomplete part.
+  # Start the next part straight away rather than waiting for the daily run. Only when every
+  # capture in this run succeeded, so a site that keeps failing can't restart forever.
+  continue:
+    needs: [plan, archive]
+    if: needs.archive.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r archiver/requirements.txt
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release list --limit 1000 --json tagName,createdAt,isPrerelease > releases.json
+          python -m archiver.plan --releases releases.json --resume-only >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run archive.yml --ref "${{ github.ref_name }}"

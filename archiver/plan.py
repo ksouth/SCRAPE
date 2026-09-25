@@ -102,6 +102,7 @@ def plan(
     force_site: str = "",
     adhoc_url: str = "",
     page_limit: int = 0,
+    resume_only: bool = False,
 ) -> List[Dict[str, Any]]:
     if adhoc_url:
         site = find_site(sites, adhoc_url) or normalise_site({"url": adhoc_url}, {})
@@ -113,6 +114,8 @@ def plan(
         jobs = [new_job(site, now, "manual run")]
     else:
         jobs = [j for s in sites if (j := plan_site(s, releases.get(s["slug"]), now))]
+        if resume_only:
+            jobs = [j for j in jobs if j["resume_tag"]]
     if page_limit:
         for job in jobs:
             job["site"] = {**job["site"], "page_limit": page_limit}
@@ -123,6 +126,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sites", default="sites.yaml")
     parser.add_argument("--releases", required=True, help="JSON from gh release list")
+    parser.add_argument("--resume-only", action="store_true", help="only captures that need another part")
     args = parser.parse_args()
 
     sites = load_sites(Path(args.sites))
@@ -134,6 +138,7 @@ def main() -> None:
         force_site=os.environ.get("INPUT_SITE", ""),
         adhoc_url=os.environ.get("INPUT_URL", "").strip(),
         page_limit=int(os.environ.get("INPUT_PAGE_LIMIT") or 0),
+        resume_only=args.resume_only,
     )
     for job in jobs:
         print(f"{job['slug']}: part {job['part']} ({job['reason']})", file=sys.stderr)

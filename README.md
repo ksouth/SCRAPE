@@ -54,7 +54,9 @@ Set any of these under `defaults:` for every site, or on one site to override.
 ## Schedules and large sites
 
 - The workflow runs when `sites.yaml` changes and once a day. New sites are captured straight away. `weekly` and `monthly` sites are captured again when due; `once` sites are never repeated automatically.
-- A run stops at the time limit, or when the archive reaches about 1.8 GB (GitHub's limit per release file is 2 GB). The capture is then published as **part 1**, marked as a pre-release, with a `crawl-state.yaml` recording where it stopped. The next daily run continues as part 2, and so on until the site is finished. All parts of a capture share the same date in their tag: `archive/<site>/<date>-partN`.
+- A run stops at the time limit, or when the archive reaches about 1.8 GB (GitHub's limit per release file is 2 GB). The capture is then published as **part 1**, marked as a pre-release, with a `crawl-state.yaml` recording where it stopped: the pages already captured and the ones still queued. The next run starts straight away and continues from there as part 2, capturing only pages not yet visited, and so on until the site is finished. Each part holds different pages; together they are the full capture. All parts share the same date in their tag: `archive/<site>/<date>-partN`.
+- If a part fails, the next part waits for the daily run instead of starting straight away.
+- A capture started from the **Run workflow** form with a URL isn't in `sites.yaml`, so it isn't continued automatically. For a large site, add it to `sites.yaml` instead.
 - Releases have no total storage limit, and the repository itself stays small because captures are never committed.
 
 ## Limits
