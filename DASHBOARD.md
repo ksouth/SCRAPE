@@ -1,6 +1,6 @@
 # Archive dashboard
 
-Rebuilt automatically after each run. Latest capture: 2026-09-25 09:35 UTC. The daily check runs at 03:17 UTC. All captures are under [Releases](https://github.com/ksouth/SCRAPE/releases).
+Rebuilt automatically after each run. Latest capture: 2026-09-25 10:11 UTC. The daily check runs at 03:17 UTC. All captures are under [Releases](https://github.com/ksouth/SCRAPE/releases).
 
 No sites in `sites.yaml` yet. Add one to start archiving.
 
@@ -12,6 +12,7 @@ Captures of sites that aren't in `sites.yaml`, such as runs started from the Run
 |---|---|---|---|---|---|---|---|---|---|
 | **chain-test**<br>https://www.ndis.gov.au | one-off | 2026-09-25 07:41 UTC | Stopped after part 3 | 194 | 0 | — | 7.0 MB | — | [open page](https://github.com/ksouth/SCRAPE/releases/tag/archive/chain-test/20260925T072812Z-part3) |
 | **ndiaaccountability-org-library-documents**<br>https://ndiaaccountability.org/library/documents/ | one-off | 2026-09-25 06:08 UTC | Complete | 15 | 0 | — | 1.5 MB | — | [open page](https://github.com/ksouth/SCRAPE/releases/tag/archive/ndiaaccountability-org-library-documents/20260925T060557Z-part1) |
+| **ndis-gov-au**<br>https://www.ndis.gov.au/ | one-off | 2026-09-25 10:11 UTC | Complete | [499 (1 failed) (view list)](https://ksouth.github.io/SCRAPE/captures/ndis-gov-au/20260925T095751Z/) | [40 (download zip, 11.1 MB)](https://github.com/ksouth/SCRAPE/releases/download/archive/ndis-gov-au/20260925T095751Z-part1/documents.zip) | — | 114.8 MB | — | [open page](https://github.com/ksouth/SCRAPE/releases/tag/archive/ndis-gov-au/20260925T095751Z-part1) |
 | **ndis-gov-au-about-us-publications-quarterly-reports**<br>https://www.ndis.gov.au/about-us/publications/quarterly-reports | one-off | 2026-09-25 06:21 UTC | Complete | 40 | 0 | — | 6.2 MB | — | [open page](https://github.com/ksouth/SCRAPE/releases/tag/archive/ndis-gov-au-about-us-publications-quarterly-reports/20260925T061746Z-part1) |
 | **ndis-gov-au-media-4907-download**<br>https://www.ndis.gov.au/media/4907/download?attachment | one-off | 2026-09-25 09:35 UTC | Complete | [1 (view list)](https://ksouth.github.io/SCRAPE/captures/ndis-gov-au-media-4907-download/20260925T093415Z/) | [1 (download zip, 54.5 KB)](https://github.com/ksouth/SCRAPE/releases/download/archive/ndis-gov-au-media-4907-download/20260925T093415Z-part1/documents.zip) | — | 224.3 KB | — | [open page](https://github.com/ksouth/SCRAPE/releases/tag/archive/ndis-gov-au-media-4907-download/20260925T093415Z-part1) |
 | **resume-test**<br>https://www.ndis.gov.au | one-off | 2026-09-25 06:31 UTC | Complete | 31 | 0 | — | 4.0 MB | — | [open page](https://github.com/ksouth/SCRAPE/releases/tag/archive/resume-test/20260925T062648Z-part1) |
