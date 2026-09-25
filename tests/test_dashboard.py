@@ -10,7 +10,7 @@ from archiver.dashboard import build, daily_run_time, release_stats, render_html
 NOW = datetime(2026, 9, 25, 12, 0, tzinfo=timezone.utc)
 DAILY = (3, 17)
 REPO = "https://github.com/me/archive"
-EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿]")
+EMOJI = re.compile("[\\U0001F300-\\U0001FAFF\\u2600-\\u27BF]")
 
 
 def rel(slug, capture, part, created, prerelease=False, body="", assets=None):
