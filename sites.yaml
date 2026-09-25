@@ -24,9 +24,3 @@ sites:
   #   exclude:                # optional: skip pages whose URL matches a regular expression
   #     - /tag/
   #     - \?replytocom=
-
-  # TEMPORARY: tests continuing a capture across runs; remove after testing.
-  - url: https://www.ndis.gov.au
-    name: resume-test-2
-    time_limit_hours: 0.03
-    workers: 2
