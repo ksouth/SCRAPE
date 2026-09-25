@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archive dashboard</title>
+<style>
+:root { --bg:#fbfbf9; --fg:#1d1d1b; --muted:#6b6b66; --line:#e3e2dc; --card:#fff; --accent:#2f5d8a;
+  --ok:#2e7d4f; --run:#9a6700; --wait:#6b6b66; }
+@media (prefers-color-scheme: dark) { :root { --bg:#161615; --fg:#ecebe6; --muted:#a3a29b; --line:#33322e;
+  --card:#1f1f1d; --accent:#8db8e3; --ok:#6fcf97; --run:#e3b341; --wait:#a3a29b; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:32px 16px 48px; }
+h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:18px; margin:36px 0 4px; }
+p.lede, p.note { color:var(--muted); margin:0 0 20px; }
+a { color:var(--accent); }
+.wrap { overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--card); }
+table { border-collapse:collapse; width:100%; min-width:760px; }
+th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600; }
+tr:last-child td { border-bottom:0; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; } td.date { white-space:nowrap; } th.num { text-align:right; }
+.site { font-weight:600; } .url { display:block; font-size:13px; color:var(--muted); word-break:break-all; }
+.status { font-weight:600; white-space:nowrap; }
+@media (max-width: 700px) {
+  table, tbody, tr, td { display:block; min-width:0; }
+  tr.head { display:none; }
+  tr { padding:10px 0; border-bottom:1px solid var(--line); } tr:last-child { border-bottom:0; }
+  td { display:flex; justify-content:space-between; gap:16px; padding:3px 14px; border:0; text-align:right; }
+  td::before { content:attr(data-label); color:var(--muted); font-size:12px; text-transform:uppercase;
+    letter-spacing:.04em; text-align:left; flex:none; }
+  td.name { display:block; text-align:left; padding-bottom:6px; } td.name::before { content:none; }
+}
+.complete { color:var(--ok); } .in-progress, .stopped { color:var(--run); } .waiting, .off { color:var(--wait); }
+</style>
+</head>
+<body>
+<main>
+<h1>Archive dashboard</h1>
+<p class="lede">Latest capture: 2026-09-25 07:28 UTC. Every capture is under <a href="https://github.com/ksouth/SCRAPE/releases">Releases</a>;
+open a <code>.wacz</code> file at <a href="https://replayweb.page">replayweb.page</a> to browse it.</p>
+<p>No sites in <code>sites.yaml</code> yet. Add one to start archiving.</p><h2>Other captures</h2><p class=note>Sites that aren't in <code>sites.yaml</code>, such as one-off runs from the Run workflow form.</p><div class="wrap"><table><tr class=head><th>Site</th><th>Schedule</th><th>Last capture</th><th>Status</th><th class=num>Pages</th><th class=num>Documents</th><th class=num>Site files</th><th class=num>Size</th><th>Next</th><th class=num>Captures</th></tr><tr><td class="name"><span class="site">chain-test</span></td><td data-label="Schedule">not in sites.yaml</td><td class="date" data-label="Last capture"><a href="https://github.com/ksouth/SCRAPE/releases/tag/archive/chain-test/20260925T072812Z-part3">2026-09-25</a></td><td class="status stopped" data-label="Status">stopped after part 3</td><td class=num data-label="Pages">194</td><td class=num data-label="Documents">0</td><td class=num data-label="Site files">—</td><td class=num data-label="Size">7.0 MB</td><td data-label="Next">—</td><td class=num data-label="Captures">1</td></tr><tr><td class="name"><span class="site">ndiaaccountability-org-library-documents</span></td><td data-label="Schedule">not in sites.yaml</td><td class="date" data-label="Last capture"><a href="https://github.com/ksouth/SCRAPE/releases/tag/archive/ndiaaccountability-org-library-documents/20260925T060557Z-part1">2026-09-25</a></td><td class="status complete" data-label="Status">complete</td><td class=num data-label="Pages">15</td><td class=num data-label="Documents">0</td><td class=num data-label="Site files">—</td><td class=num data-label="Size">1.5 MB</td><td data-label="Next">—</td><td class=num data-label="Captures">1</td></tr><tr><td class="name"><span class="site">ndis-gov-au-about-us-publications-quarterly-reports</span></td><td data-label="Schedule">not in sites.yaml</td><td class="date" data-label="Last capture"><a href="https://github.com/ksouth/SCRAPE/releases/tag/archive/ndis-gov-au-about-us-publications-quarterly-reports/20260925T061746Z-part1">2026-09-25</a></td><td class="status complete" data-label="Status">complete</td><td class=num data-label="Pages">40</td><td class=num data-label="Documents">0</td><td class=num data-label="Site files">—</td><td class=num data-label="Size">6.2 MB</td><td data-label="Next">—</td><td class=num data-label="Captures">2</td></tr><tr><td class="name"><span class="site">ndis-gov-au-media-4907-download</span></td><td data-label="Schedule">not in sites.yaml</td><td class="date" data-label="Last capture"><a href="https://github.com/ksouth/SCRAPE/releases/tag/archive/ndis-gov-au-media-4907-download/20260925T062304Z-part1">2026-09-25</a></td><td class="status complete" data-label="Status">complete</td><td class=num data-label="Pages">1</td><td class=num data-label="Documents">1</td><td class=num data-label="Site files">—</td><td class=num data-label="Size">120.5 KB</td><td data-label="Next">—</td><td class=num data-label="Captures">1</td></tr><tr><td class="name"><span class="site">resume-test</span></td><td data-label="Schedule">not in sites.yaml</td><td class="date" data-label="Last capture"><a href="https://github.com/ksouth/SCRAPE/releases/tag/archive/resume-test/20260925T062648Z-part1">2026-09-25</a></td><td class="status complete" data-label="Status">complete</td><td class=num data-label="Pages">31</td><td class=num data-label="Documents">0</td><td class=num data-label="Site files">—</td><td class=num data-label="Size">4.0 MB</td><td data-label="Next">—</td><td class=num data-label="Captures">1</td></tr><tr><td class="name"><span class="site">resume-test-2</span></td><td data-label="Schedule">not in sites.yaml</td><td class="date" data-label="Last capture"><a href="https://github.com/ksouth/SCRAPE/releases/tag/archive/resume-test-2/20260925T063515Z-part2">2026-09-25</a></td><td class="status stopped" data-label="Status">stopped after part 2</td><td class=num data-label="Pages">106</td><td class=num data-label="Documents">0</td><td class=num data-label="Site files">—</td><td class=num data-label="Size">7.0 MB</td><td data-label="Next">—</td><td class=num data-label="Captures">1</td></tr></table></div>
+<p class="note">Rebuilt automatically after each run. Pages, documents and size cover every part of the latest capture.</p>
+</main>
+</body>
+</html>
