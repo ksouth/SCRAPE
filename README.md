@@ -60,7 +60,8 @@ Set any of these under `defaults:` for every site, or on one site to override.
 ## Limits
 
 - Only content reachable by links (or listed in the sitemap) is captured. Search results, content behind a login, and pages that need form input are not.
-- Documents on other websites are downloaded only when the link ends in a document extension. A link like `https://other.site/download?id=7` is not fetched.
+- Documents are recognised by file extension, by type (PDF, Word, Excel and so on), or by the file name the server sends. Links on other websites are fetched when they end in a document extension or look like downloads (`download`, `attachment`, `/media/`, `/files/`); anything that turns out to be a web page is skipped.
+- When a page limit is set, the sitemap is not used, so a quick test follows the starting page's own links.
 - Each part's `documents.zip` contains the documents found during that part.
 - Releases are public if the repository is public. Use a private repository for anything that shouldn't be.
 

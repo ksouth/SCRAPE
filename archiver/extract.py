@@ -42,6 +42,8 @@ DOCUMENT_TYPES = {
 # GitHub release assets must be under 2 GiB.
 ZIP_PART_LIMIT = 1_900_000_000
 MAX_HTML_BYTES = 20_000_000
+# Many sites serve documents from links without a file extension, e.g. /media/4907/download?attachment.
+DOWNLOAD_LINK_RE = re.compile(r"download|attachment|getfile|/files?/|/media/|/documents?/", re.IGNORECASE)
 CSV_FIELDS = ["zip_file", "path", "url", "linked_from", "content_type", "size_bytes", "sha256", "source", "captured_at"]
 
 
@@ -55,6 +57,7 @@ class Document:
     captured_at: str
     tmp_path: Path
     linked_from: str = ""
+    filename: str = ""  # from the server's Content-Disposition header, if any
     zip_file: str = ""
     path: str = ""
 
@@ -100,10 +103,33 @@ def extension(url: str) -> str:
     return PurePosixPath(unquote(urlsplit(url).path)).suffix.lower()
 
 
-def is_document(url: str, content_type: str, extensions: Iterable[str]) -> bool:
+def disposition_filename(header: str) -> str:
+    """The filename in a Content-Disposition header, or ''."""
+    if not header:
+        return ""
+    m = re.search(r"filename\*\s*=\s*[^']*'[^']*'([^;]+)", header, re.IGNORECASE)
+    if m:
+        name = unquote(m.group(1).strip().strip('"'))
+    else:
+        m = re.search(r'filename\s*=\s*"([^"]+)"|filename\s*=\s*([^;]+)', header, re.IGNORECASE)
+        name = (m.group(1) or m.group(2)).strip() if m else ""
+    return PurePosixPath(name.replace("\\", "/")).name
+
+
+def is_document(url: str, content_type: str, extensions: Iterable[str], disposition: str = "") -> bool:
     if base_type(content_type) in ("text/html", "application/xhtml+xml"):
         return False
-    return extension(url) in extensions or base_type(content_type) in DOCUMENT_TYPES
+    extensions = set(extensions)
+    return (
+        extension(url) in extensions
+        or base_type(content_type) in DOCUMENT_TYPES
+        or PurePosixPath(disposition_filename(disposition)).suffix.lower() in extensions
+    )
+
+
+def looks_like_document_link(url: str, extensions: Iterable[str]) -> bool:
+    """Whether a link is worth fetching as a possible document (confirmed by its type once fetched)."""
+    return extension(url) in set(extensions) or bool(DOWNLOAD_LINK_RE.search(urlsplit(url).path + "?" + urlsplit(url).query))
 
 
 def in_scope(url: str, site: dict) -> bool:
@@ -160,6 +186,7 @@ def scan_warcs(warcs: Iterable, extensions: Iterable[str], tmp_dir: Path) -> Sca
                     continue
                 result.captured.add(url)
                 ctype = record.http_headers.get_header("Content-Type") or ""
+                disposition = record.http_headers.get_header("Content-Disposition") or ""
                 if base_type(ctype) in ("text/html", "application/xhtml+xml"):
                     result.pages += 1
                     raw = record.content_stream().read(MAX_HTML_BYTES)
@@ -170,7 +197,7 @@ def scan_warcs(warcs: Iterable, extensions: Iterable[str], tmp_dir: Path) -> Sca
                         pass  # Keep whatever links were found before a parse error.
                     for link in parser.links:
                         result.links.setdefault(link, url)
-                elif is_document(url, ctype, extensions):
+                elif is_document(url, ctype, extensions, disposition):
                     tmp, size, sha = _stream_to_temp(record.content_stream(), tmp_dir)
                     if stored.get(url) == sha:
                         tmp.unlink()
@@ -179,20 +206,21 @@ def scan_warcs(warcs: Iterable, extensions: Iterable[str], tmp_dir: Path) -> Sca
                     result.documents.append(Document(
                         url=url, content_type=base_type(ctype), size=size, sha256=sha, source="crawl",
                         captured_at=record.rec_headers.get_header("WARC-Date") or "", tmp_path=tmp,
+                        filename=disposition_filename(disposition),
                     ))
     for doc in result.documents:
         doc.linked_from = result.links.get(doc.url, "")
     return result
 
 
-Fetcher = Callable[[str], Tuple[object, str]]  # url -> (readable stream, content type)
+Fetcher = Callable[[str], Tuple[object, str, str]]  # url -> (readable stream, content type, content disposition)
 
 
 def http_fetcher(user_agent: str, timeout: int = 60) -> Fetcher:
     def fetch(url: str):
         req = urllib.request.Request(url, headers={"User-Agent": user_agent})
         resp = urllib.request.urlopen(req, timeout=timeout)
-        return resp, resp.headers.get("Content-Type", "")
+        return resp, resp.headers.get("Content-Type", ""), resp.headers.get("Content-Disposition", "")
     return fetch
 
 
@@ -230,7 +258,7 @@ def fetch_offsite(
         if url.startswith(("http://", "https://"))
         and url not in scan.captured
         and not in_scope(url, site)
-        and extension(url) in extensions
+        and looks_like_document_link(url, extensions)
     ]
     failures = []
     for i, (url, page) in enumerate(targets):
@@ -241,8 +269,10 @@ def fetch_offsite(
             failures.append((url, page, "blocked by robots.txt"))
             continue
         try:
-            stream, ctype = fetcher(url)
+            stream, ctype, disposition = fetcher(url)
             with stream:
+                if not is_document(url, ctype, extensions, disposition):
+                    continue  # A web page or other non-document; leave it to the web archive.
                 tmp, size, sha = _stream_to_temp(stream, tmp_dir, max_bytes=ZIP_PART_LIMIT)
         except Exception as exc:
             failures.append((url, page, f"{type(exc).__name__}: {exc}"[:200]))
@@ -250,6 +280,7 @@ def fetch_offsite(
         scan.documents.append(Document(
             url=url, content_type=base_type(ctype), size=size, sha256=sha, source="offsite",
             captured_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), tmp_path=tmp, linked_from=page,
+            filename=disposition_filename(disposition),
         ))
         if delay:
             time.sleep(delay)
@@ -257,7 +288,11 @@ def fetch_offsite(
 
 
 def uncaptured_in_scope(scan: ScanResult, site: dict) -> List[Tuple[str, str]]:
-    """Document links inside the crawl's scope that it did not capture (robots, limits, or errors)."""
+    """Document links inside the crawl's scope that it did not capture (robots, limits, or errors).
+
+    Only links ending in a document extension: download-style links without one can't be told
+    apart from ordinary pages without fetching them.
+    """
     extensions = set(site["document_extensions"])
     return sorted(
         (url, page) for url, page in scan.links.items()
@@ -265,9 +300,13 @@ def uncaptured_in_scope(scan: ScanResult, site: dict) -> List[Tuple[str, str]]:
     )
 
 
-def zip_path(url: str, used: Set[str]) -> str:
+def zip_path(url: str, used: Set[str], filename: str = "") -> str:
     parts = urlsplit(url)
     path = unquote(parts.path)
+    if filename:
+        # /media/4907/download + "Quarterly report.pdf" -> /media/4907/Quarterly report.pdf
+        path = path.rsplit("/", 1)[0] + "/" + filename
+        parts = parts._replace(query="")
     if not path or path.endswith("/"):
         path += "index"
     segments = [re.sub(r"[^\w.\-() ]+", "_", s).strip(" .") or "_" for s in path.split("/") if s]
@@ -305,7 +344,7 @@ def write_outputs(documents: List[Document], out_dir: Path, part_limit: int = ZI
         zip_name = "documents.zip" if len(groups) == 1 else f"documents-{i}.zip"
         with zipfile.ZipFile(out_dir / zip_name, "w", zipfile.ZIP_DEFLATED, allowZip64=True) as zf:
             for doc in group:
-                doc.zip_file, doc.path = zip_name, zip_path(doc.url, used)
+                doc.zip_file, doc.path = zip_name, zip_path(doc.url, used, doc.filename)
                 zf.write(doc.tmp_path, doc.path)
         written.append(out_dir / zip_name)
     with open(out_dir / "documents.csv", "w", newline="") as fh:

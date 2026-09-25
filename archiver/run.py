@@ -53,7 +53,8 @@ def crawler_command(site: dict, collection: str, crawls: Path, user_agent_suffix
     ]
     if site["respect_robots"]:
         cmd.append("--useRobots")
-    if site["use_sitemap"]:
+    # With a page limit (usually a quick test), sitemap entries would crowd out the starting page's links.
+    if site["use_sitemap"] and not site["page_limit"]:
         cmd.append("--useSitemap")
     if site["page_limit"]:
         cmd += ["--pageLimit", str(site["page_limit"])]

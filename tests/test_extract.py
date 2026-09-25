@@ -17,6 +17,8 @@ PAGE = b"""<html><body>
 <a href="/files/report.pdf">Report</a>
 <a href="/files/report.pdf#page=2">Same report</a>
 <a href="https://other.example.net/paper.docx">Offsite paper</a>
+<a href="https://other.example.net/media/12/download?attachment">Offsite download</a>
+<a href="https://other.example.net/news/">Offsite page</a>
 <a href="/files/missing.xlsx">Not captured</a>
 <a href="/about/">About</a>
 <a href="mailto:someone@example.org">Email</a>
@@ -26,8 +28,8 @@ PAGE = b"""<html><body>
 def write_warc(path: Path, records):
     with open(path, "wb") as fh:
         writer = WARCWriter(fh, gzip=True)
-        for url, status, ctype, body in records:
-            headers = StatusAndHeaders(status, [("Content-Type", ctype)], protocol="HTTP/1.1")
+        for url, status, ctype, body, *extra in records:
+            headers = StatusAndHeaders(status, [("Content-Type", ctype), *extra], protocol="HTTP/1.1")
             writer.write_record(writer.create_warc_record(url, "response", payload=io.BytesIO(body), http_headers=headers))
 
 
@@ -45,6 +47,8 @@ class ExtractTest(unittest.TestCase):
             ("https://www.example.org/download?id=7", "200 OK", "application/pdf", PDF + b"2"),
             ("https://www.example.org/gone.pdf", "404 Not Found", "application/pdf", b""),
             ("https://www.example.org/style.css", "200 OK", "text/css", b"body{}"),
+            ("https://www.example.org/media/9/download?attachment", "200 OK", "application/octet-stream", b"x",
+             ("Content-Disposition", "attachment; filename=\"Quarterly report Q3.xlsx\"")),
         ])
 
     def scan(self):
@@ -53,7 +57,11 @@ class ExtractTest(unittest.TestCase):
     def test_finds_documents_by_extension_and_type(self):
         scan = self.scan()
         urls = sorted(d.url for d in scan.documents)
-        self.assertEqual(urls, ["https://www.example.org/download?id=7", "https://www.example.org/files/report.pdf"])
+        self.assertEqual(urls, [
+            "https://www.example.org/download?id=7",
+            "https://www.example.org/files/report.pdf",
+            "https://www.example.org/media/9/download?attachment",
+        ])
         pdf = next(d for d in scan.documents if d.url.endswith("report.pdf"))
         self.assertEqual(pdf.sha256, hashlib.sha256(PDF).hexdigest())
         self.assertEqual(pdf.linked_from, "https://www.example.org/")
@@ -65,12 +73,15 @@ class ExtractTest(unittest.TestCase):
 
         def fake_fetch(url):
             fetched.append(url)
-            return io.BytesIO(b"docx bytes"), "application/octet-stream"
+            if url.endswith("download?attachment"):
+                return io.BytesIO(b"pdf"), "application/pdf", 'attachment; filename="Plan.pdf"'
+            return io.BytesIO(b"docx bytes"), "application/octet-stream", ""
 
         failures = extract.fetch_offsite(scan, self.site, self.tmp, fake_fetch, robots=None, delay=0)
-        self.assertEqual(fetched, ["https://other.example.net/paper.docx"])
+        self.assertEqual(fetched, ["https://other.example.net/paper.docx", "https://other.example.net/media/12/download?attachment"])
         self.assertEqual(failures, [])
         offsite = [d for d in scan.documents if d.source == "offsite"]
+        self.assertEqual([d.filename for d in offsite], ["", "Plan.pdf"])
         self.assertEqual(offsite[0].linked_from, "https://www.example.org/")
         self.assertEqual(
             extract.uncaptured_in_scope(scan, self.site),
@@ -84,7 +95,7 @@ class ExtractTest(unittest.TestCase):
             raise OSError("connection refused")
 
         failures = extract.fetch_offsite(scan, self.site, self.tmp, failing, robots=None, delay=0)
-        self.assertEqual(len(failures), 1)
+        self.assertEqual(len(failures), 2)
         self.assertIn("connection refused", failures[0][2])
 
     def test_outputs(self):
@@ -96,15 +107,16 @@ class ExtractTest(unittest.TestCase):
             self.assertIn("www.example.org/files/report.pdf", names)
             self.assertEqual(zf.read("www.example.org/files/report.pdf"), PDF)
             self.assertTrue(any(n.startswith("www.example.org/download__") for n in names))
+            self.assertIn("www.example.org/media/9/Quarterly report Q3.xlsx", names)
         with open(written[1]) as fh:
             rows = list(csv.DictReader(fh))
-        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(rows), 3)
         self.assertEqual({r["source"] for r in rows}, {"crawl"})
 
     def test_zip_rolls_over_at_limit(self):
         scan = self.scan()
         written = extract.write_outputs(scan.documents, self.dir / "out", part_limit=len(PDF) + 1)
-        self.assertEqual([p.name for p in written], ["documents-1.zip", "documents-2.zip", "documents.csv"])
+        self.assertEqual([p.name for p in written], ["documents-1.zip", "documents-2.zip", "documents-3.zip", "documents.csv"])
 
     def test_no_documents(self):
         written = extract.write_outputs([], self.dir / "out")
@@ -120,6 +132,20 @@ class ExtractTest(unittest.TestCase):
         self.assertEqual(b, "x.org/a/B__2.pdf")
         self.assertNotIn("..", c)
         self.assertEqual(d, "x.org/dir/index")
+
+    def test_disposition_filename(self):
+        f = extract.disposition_filename
+        self.assertEqual(f('attachment; filename="a b.pdf"'), "a b.pdf")
+        self.assertEqual(f("attachment; filename=plain.docx"), "plain.docx")
+        self.assertEqual(f("attachment; filename*=UTF-8''Caf%C3%A9%20plan.pdf"), "Café plan.pdf")
+        self.assertEqual(f('attachment; filename="../../etc/passwd"'), "passwd")
+        self.assertEqual(f(""), "")
+
+    def test_download_links(self):
+        exts = self.site["document_extensions"]
+        self.assertTrue(extract.looks_like_document_link("https://x.org/media/1/download?attachment", exts))
+        self.assertTrue(extract.looks_like_document_link("https://x.org/a/report.PDF", exts))
+        self.assertFalse(extract.looks_like_document_link("https://x.org/news/story", exts))
 
     def test_scope(self):
         site = normalise_site({"url": "https://www.example.org/pubs/list", "scope": "prefix"}, {})
