@@ -31,11 +31,25 @@ Each capture is a release named after the site and date, with these files:
 | `site-files.zip`, `site-files.csv` | Only with `site_files: true`. Every file the crawl captured (HTML, CSS, scripts, images, fonts, documents) exactly as the server sent it, in folders by website and path, with an index. Useful for reusing or rebuilding a site's own files (with the owner's permission). Pages without an extension are saved as `.html`, and other files without one get an extension from their type (e.g. `.css`). |
 | `crawl-report.md` | Pages captured and failed, sizes, and every linked document that could not be captured and why. Also shown as the release description. |
 
+## Dashboard
+
+After every run, the workflow rebuilds a dashboard listing each site: its schedule, last capture, status (complete, in progress, waiting, stopped, or off), pages, documents, site files, size, and when it runs next. Each date links to that capture's release. Sites that aren't in `sites.yaml`, such as one-off runs, are listed separately.
+
+Choose the formats in `sites.yaml`:
+
+```yaml
+dashboard:
+  markdown: true    # DASHBOARD.md in this repository, readable on GitHub
+  web_page: true    # docs/index.html, a web page for GitHub Pages
+```
+
+The workflow writes the web page but can't publish it by itself: to put it online, turn on **Settings → Pages → Deploy from a branch → main, /docs** once. Set `web_page: false` if you don't want it.
+
 Pages are captured in a real browser ([Browsertrix Crawler](https://github.com/webrecorder/browsertrix-crawler) from Webrecorder), so sites that build pages with JavaScript are captured too.
 
 ## `sites.yaml` settings
 
-Set any of these under `defaults:` for every site, or on one site to override.
+Set any of these under `defaults:` for every site, or on one site to override. The `dashboard:` section is described above.
 
 | Setting | Default | Meaning |
 |---|---|---|
